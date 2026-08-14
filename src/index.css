@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import './shared/styles/utilStyles.css';
+
+@theme {
+    --color-background: #09090b;
+    --color-primary-text: #ffffff;
+    --color-gray-hue: #3f3f46;
+    --color-green-hue: #34d399;
+    --color-blue-hue: #38bdf8;
+    --color-pink-hue: #a78bfa;
+    --color-orange-hue: #f97316;
+    --color-purple-hue: #e879f9;
+    --color-rose-hue: #fb7185;
+    --color-red-hue: #f43f5e;
+    --color-yellow-hue: #fbbf24;
+}
+
+@layer base {
+    /* Base font size - scales all rem-based text/spacing utilities up */
+    html {
+        font-size: 118.75%;
+    }
+
+    /* Font Family */
+    * {
+        font-family: 'DM Mono', sans-serif;
+    }
+
+    /* Custom Scrollbar */
+    *::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Number Scroll */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type='number'] {
+        appearance: textfield;
+    }
+
+    /* Eye Color */
+    input::-ms-reveal,
+    input::-webkit-credentials-auto-fill-button {
+        display: none !important;
+    }
+
+    /* Body Titles */
+    body {
+        @apply text-black;
+        font-family: 'Inter', sans-serif;
+    }
+}

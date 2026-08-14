@@ -1,0 +1,24 @@
+@utility box {
+    @apply border border-white;
+}
+@utility box-center {
+    @apply box flex-center;
+}
+@utility flex-center {
+    @apply flex flex-row items-center justify-center;
+}
+@utility view-screen {
+    @apply h-screen w-screen;
+}
+@utility view-full {
+    @apply h-full w-full;
+}
+@utility grow-item-1 {
+    @apply transition-transform duration-100 ease-out hover:scale-101;
+}
+@utility grow-item-2 {
+    @apply transition-transform duration-100 ease-out hover:scale-102;
+}
+@utility item-shadow {
+    box-shadow: 0px 3px 8px 3px rgba(0, 0, 0, 0.24);
+}
