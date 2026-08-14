@@ -7,7 +7,7 @@ import Input from '../../shared/components/Input';
 import Button from '../../shared/components/Button';
 import { useGetConsultationsQuery } from '../../shared/api/endpoints/consultationEndpoint';
 import { useGetPatientsQuery } from '../../shared/api/endpoints/patientEndpoint';
-import { formatDate } from '../../shared/utils/dateUtils';
+import { formatAgeAtDate, formatDate, isWithinDateRange } from '../../shared/utils/dateUtils';
 import { getPatientFullName } from '../../shared/utils/patientUtils';
 import type { ConsultationType, PatientType } from '../../shared/data/data.types';
 import type { IDBrand } from '../../shared/utils/idUtils';
@@ -18,13 +18,6 @@ import type { IDBrand } from '../../shared/utils/idUtils';
 interface Props {
     className?: string;
 }
-
-const isWithinDateRange = (iso: string, from: string, to: string): boolean => {
-    const time = new Date(iso).getTime();
-    if (from && time < new Date(from).getTime()) return false;
-    if (to && time > new Date(`${to}T23:59:59.999`).getTime()) return false;
-    return true;
-};
 
 const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
     const navigate = useNavigate();
@@ -80,41 +73,42 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                     <p className="text-sm text-slate-500">Patient visit records</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <Input
-                        name="search"
-                        Icon={Search}
-                        placeholder="Search by patient name..."
-                        className="w-48"
-                        value={searchTerm}
-                        onChange={(event) => setSearchTerm(event.target.value)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium text-slate-600">From</span>
-                        <Input
-                            name="fromDate"
-                            type="date"
-                            aria-label="From date"
-                            value={fromDate}
-                            onChange={(event) => setFromDate(event.target.value)}
-                        />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium text-slate-600">To</span>
-                        <Input
-                            name="toDate"
-                            type="date"
-                            aria-label="To date"
-                            value={toDate}
-                            onChange={(event) => setToDate(event.target.value)}
-                        />
-                    </div>
+                <Button
+                    label="Add Consultation"
+                    Icon={Plus}
+                    className="w-auto"
+                    onClick={() => navigate('/consultations/new')}
+                />
+            </div>
 
-                    <Button
-                        label="Add Consultation"
-                        Icon={Plus}
-                        className="w-auto"
-                        onClick={() => navigate('/consultations/new')}
+            <div className="flex flex-wrap items-center gap-2">
+                <Input
+                    name="search"
+                    Icon={Search}
+                    placeholder="Search by patient name..."
+                    className="min-w-0 flex-1"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                />
+
+                <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-slate-600">From</span>
+                    <Input
+                        name="fromDate"
+                        type="date"
+                        aria-label="From date"
+                        value={fromDate}
+                        onChange={(event) => setFromDate(event.target.value)}
+                    />
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-slate-600">To</span>
+                    <Input
+                        name="toDate"
+                        type="date"
+                        aria-label="To date"
+                        value={toDate}
+                        onChange={(event) => setToDate(event.target.value)}
                     />
                 </div>
             </div>
@@ -132,6 +126,7 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                             <th className="px-4 py-3 text-sm font-semibold text-blue-700">
                                 Patient
                             </th>
+                            <th className="px-4 py-3 text-sm font-semibold text-blue-700">Age</th>
                             <th className="px-4 py-3 text-sm font-semibold text-blue-700">Date</th>
                             <th className="px-4 py-3 text-sm font-semibold text-blue-700">
                                 Chief Complaint
@@ -146,7 +141,7 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                         {isLoading && (
                             <tr>
                                 <td
-                                    colSpan={5}
+                                    colSpan={6}
                                     className="px-4 py-6 text-center text-sm text-slate-500"
                                 >
                                     Loading consultations...
@@ -157,7 +152,7 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                         {!isLoading && filteredConsultations.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={5}
+                                    colSpan={6}
                                     className="px-4 py-6 text-center text-sm text-slate-500"
                                 >
                                     {searchTerm.trim() || fromDate || toDate
@@ -179,10 +174,18 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                                         }
                                         className="cursor-pointer hover:bg-blue-50"
                                     >
-                                        <td className="px-4 py-3 text-sm font-medium text-slate-900">
+                                        <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-slate-900">
                                             {patient
                                                 ? getPatientFullName(patient)
                                                 : 'Unknown patient'}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">
+                                            {patient
+                                                ? formatAgeAtDate(
+                                                      patient.dateOfBirth,
+                                                      consultation.consultationDate
+                                                  )
+                                                : '—'}
                                         </td>
                                         <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">
                                             {formatDate(consultation.consultationDate)}
@@ -190,10 +193,10 @@ const ConsultationsPageLayout: React.FC<Props> = ({ className }) => {
                                         <td className="px-4 py-3 text-sm text-slate-600">
                                             {consultation.chiefComplaint}
                                         </td>
-                                        <td className="max-w-xs truncate px-4 py-3 text-sm text-slate-600">
+                                        <td className="max-w-xs px-4 py-3 text-sm text-slate-600">
                                             {consultation.assessment}
                                         </td>
-                                        <td className="max-w-xs truncate px-4 py-3 text-sm text-slate-600">
+                                        <td className="max-w-xs px-4 py-3 text-sm text-slate-600">
                                             {consultation.plan}
                                         </td>
                                     </tr>

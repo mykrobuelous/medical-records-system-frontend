@@ -12,10 +12,13 @@ import {
     Droplet,
     MapPin,
     Phone,
+    Pill,
+    Stethoscope,
     Trash2,
     User,
 } from 'lucide-react';
 import Input from '../../shared/components/Input';
+import Select from '../../shared/components/Select';
 import Textarea from '../../shared/components/Textarea';
 import Button from '../../shared/components/Button';
 import ConfirmDialog from '../../shared/components/ConfirmDialog';
@@ -23,7 +26,10 @@ import ConsultationHistoryList from '../../shared/components/ConsultationHistory
 import DetailField from '../../shared/components/DetailField';
 import AllergyBanner from '../../shared/components/AllergyBanner';
 import CP_SelectPatientModal from './components/CP_SelectPatientModal';
+import CP_SelectDiagnosisModal from './components/CP_SelectDiagnosisModal';
+import CP_SelectMedicineModal from './components/CP_SelectMedicineModal';
 import { useGetPatientsQuery } from '../../shared/api/endpoints/patientEndpoint';
+import { useGetInsurancesQuery } from '../../shared/api/endpoints/insuranceEndpoint';
 import {
     useCreateConsultationMutation,
     useDeleteConsultationMutation,
@@ -39,6 +45,7 @@ import {
     type ConsultationSchemaType,
 } from './schema/consultationSchema';
 import type { IDBrand } from '../../shared/utils/idUtils';
+import type { DiagnosisType, MedicineType } from '../../shared/data/data.types';
 
 /* ===================================================================== */
 /*🧩 CONSULTATION FORM PAGE LAYOUT - Record a new consultation, or edit an existing one*/
@@ -58,6 +65,8 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<SidebarTab>('history');
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+    const [isDiagnosisModalOpen, setIsDiagnosisModalOpen] = useState(false);
+    const [isMedicineModalOpen, setIsMedicineModalOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -79,10 +88,12 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
         register,
         handleSubmit,
         control,
+        setValue,
+        getValues,
         formState: { errors, isSubmitting },
     } = useForm<ConsultationFormValues, unknown, ConsultationSchemaType>({
         resolver: zodResolver(consultationSchema),
-        defaultValues: { vitals: {}, patientId: initialPatientId },
+        defaultValues: { vitals: {}, patientId: initialPatientId, insurance: 'Personal' },
         values: consultation
             ? {
                   patientId: consultation.patientId,
@@ -93,17 +104,21 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                   assessment: consultation.assessment,
                   plan: consultation.plan,
                   vitals: {
-                      bloodPressure: consultation.vitals.bloodPressure ?? '',
+                      height: consultation.vitals.height.toString(),
                       weight: consultation.vitals.weight?.toString() ?? '',
                       temperature: consultation.vitals.temperature?.toString() ?? '',
-                      heartRate: consultation.vitals.heartRate?.toString() ?? '',
                   },
+                  insurance: consultation.insurance,
+                  payment: consultation.payment.toString(),
               }
             : undefined,
     });
     const [createConsultation] = useCreateConsultationMutation();
     const [updateConsultation] = useUpdateConsultationMutation();
     const [deleteConsultation, { isLoading: isDeleting }] = useDeleteConsultationMutation();
+
+    const { data: insurancesResponse } = useGetInsurancesQuery();
+    const insurances = insurancesResponse?.status === 'ok' ? insurancesResponse.data : [];
 
     const {
         field: { value: selectedPatientId, onChange: setSelectedPatientId },
@@ -138,11 +153,14 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                           assessment: data.assessment,
                           plan: data.plan,
                           vitals: data.vitals,
+                          insurance: data.insurance as IDBrand | 'Personal',
+                          payment: data.payment,
                       },
                   }).unwrap()
                 : await createConsultation({
                       ...data,
                       patientId: data.patientId as IDBrand,
+                      insurance: data.insurance as IDBrand | 'Personal',
                   }).unwrap();
 
             if (response.status === 'error') {
@@ -157,6 +175,21 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                     : 'Failed to add consultation. Please try again.'
             );
         }
+    };
+
+    const handleSelectDiagnosis = (diagnosis: DiagnosisType) => {
+        const currentAssessment = getValues('assessment').trim();
+        const nextAssessment = currentAssessment
+            ? `${currentAssessment}\n${diagnosis.diagnosis}`
+            : diagnosis.diagnosis;
+        setValue('assessment', nextAssessment, { shouldDirty: true, shouldValidate: true });
+    };
+
+    const handleSelectMedicine = (medicine: MedicineType) => {
+        const currentPlan = getValues('plan').trim();
+        const medicineText = `${medicine.medicine} - ${medicine.description}`;
+        const nextPlan = currentPlan ? `${currentPlan}\n${medicineText}` : medicineText;
+        setValue('plan', nextPlan, { shouldDirty: true, shouldValidate: true });
     };
 
     const handleDelete = async () => {
@@ -289,29 +322,56 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                                 {...register('objective')}
                                 error={errors.objective?.message}
                             />
-                            <Textarea
-                                label="Assessment"
-                                {...register('assessment')}
-                                error={errors.assessment?.message}
-                            />
-                            <Textarea
-                                label="Plan"
-                                {...register('plan')}
-                                error={errors.plan?.message}
-                            />
+                            <div>
+                                <div className="mb-2 flex items-center justify-between">
+                                    <label className="text-sm font-medium text-slate-700">
+                                        Assessment
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDiagnosisModalOpen(true)}
+                                        className="flex cursor-pointer items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
+                                    >
+                                        <Stethoscope size={14} strokeWidth={2} />
+                                        Add Diagnosis
+                                    </button>
+                                </div>
+                                <Textarea
+                                    {...register('assessment')}
+                                    error={errors.assessment?.message}
+                                />
+                            </div>
+                            <div>
+                                <div className="mb-2 flex items-center justify-between">
+                                    <label className="text-sm font-medium text-slate-700">
+                                        Plan
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMedicineModalOpen(true)}
+                                        className="flex cursor-pointer items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
+                                    >
+                                        <Pill size={14} strokeWidth={2} />
+                                        Add Medicine
+                                    </button>
+                                </div>
+                                <Textarea {...register('plan')} error={errors.plan?.message} />
+                            </div>
 
                             <div className="grid grid-cols-1 gap-4 border-t border-blue-100 pt-4 sm:grid-cols-2">
                                 <Input
-                                    label="Blood Pressure"
-                                    placeholder="e.g. 120/80"
-                                    {...register('vitals.bloodPressure')}
-                                    error={errors.vitals?.bloodPressure?.message}
+                                    label="Height (cm)"
+                                    type="number"
+                                    step="0.1"
+                                    {...register('vitals.height')}
+                                    error={errors.vitals?.height?.message}
                                 />
                                 <Input
-                                    label="Heart Rate (bpm)"
+                                    label="Weight (kg)"
                                     type="number"
-                                    {...register('vitals.heartRate')}
-                                    error={errors.vitals?.heartRate?.message}
+                                    step="0.1"
+                                    {...register('vitals.weight')}
+                                    error={errors.vitals?.weight?.message}
                                 />
                                 <Input
                                     label="Temperature (°C)"
@@ -320,12 +380,27 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                                     {...register('vitals.temperature')}
                                     error={errors.vitals?.temperature?.message}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 border-t border-blue-100 pt-4 sm:grid-cols-2">
+                                <Select
+                                    label="Insurance"
+                                    {...register('insurance')}
+                                    error={errors.insurance?.message}
+                                >
+                                    <option value="Personal">Personal (self-pay)</option>
+                                    {insurances.map((insurance) => (
+                                        <option key={insurance.id} value={insurance.id}>
+                                            {insurance.insurance}
+                                        </option>
+                                    ))}
+                                </Select>
                                 <Input
-                                    label="Weight (kg)"
+                                    label="Payment"
                                     type="number"
-                                    step="0.1"
-                                    {...register('vitals.weight')}
-                                    error={errors.vitals?.weight?.message}
+                                    step="0.01"
+                                    {...register('payment')}
+                                    error={errors.payment?.message}
                                 />
                             </div>
 
@@ -480,6 +555,18 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                     onSelect={(patient) => setSelectedPatientId(patient.id)}
                 />
             )}
+
+            <CP_SelectDiagnosisModal
+                isOpen={isDiagnosisModalOpen}
+                onClose={() => setIsDiagnosisModalOpen(false)}
+                onSelect={handleSelectDiagnosis}
+            />
+
+            <CP_SelectMedicineModal
+                isOpen={isMedicineModalOpen}
+                onClose={() => setIsMedicineModalOpen(false)}
+                onSelect={handleSelectMedicine}
+            />
 
             {isEditMode && (
                 <ConfirmDialog

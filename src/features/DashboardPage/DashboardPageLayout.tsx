@@ -73,10 +73,10 @@ const DashboardPageLayout: React.FC<Props> = ({ className }) => {
     );
 
     return (
-        <div className={twMerge('flex h-full min-h-0 flex-col gap-6', className)}>
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className={twMerge('flex h-full min-h-0 flex-col gap-4', className)}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-3xl font-bold text-blue-950">Dashboard</h1>
+                    <h1 className="text-2xl font-bold text-blue-950">Dashboard</h1>
                     <p className="text-sm text-slate-500">Overview of patients and consultations</p>
                 </div>
 
@@ -103,7 +103,7 @@ const DashboardPageLayout: React.FC<Props> = ({ className }) => {
                 </p>
             )}
 
-            <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <DB_StatCard
                     label="Total Patients"
                     value={patients.length}
@@ -130,7 +130,7 @@ const DashboardPageLayout: React.FC<Props> = ({ className }) => {
                 />
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                 <DB_RecentConsultations
                     consultations={recentConsultations}
                     patientNameById={patientNameById}

@@ -49,16 +49,9 @@ const ConsultationHistoryList: React.FC<Props> = ({
                         {consultation.plan}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                        {consultation.vitals.bloodPressure && (
-                            <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-                                BP {consultation.vitals.bloodPressure}
-                            </span>
-                        )}
-                        {consultation.vitals.heartRate !== undefined && (
-                            <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-                                HR {consultation.vitals.heartRate} bpm
-                            </span>
-                        )}
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+                            Height {consultation.vitals.height} cm
+                        </span>
                         {consultation.vitals.temperature !== undefined && (
                             <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
                                 Temp {consultation.vitals.temperature}°C
@@ -69,6 +62,9 @@ const ConsultationHistoryList: React.FC<Props> = ({
                                 Weight {consultation.vitals.weight} kg
                             </span>
                         )}
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+                            {consultation.insurance === 'Personal' ? 'Personal' : 'Insured'}
+                        </span>
                     </div>
                 </li>
             ))}

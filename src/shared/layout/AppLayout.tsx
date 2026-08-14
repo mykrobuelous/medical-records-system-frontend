@@ -7,6 +7,8 @@ import ConsultationsPageLayout from '../../features/ConsultationsPage/Consultati
 import ConsultationFormPageLayout from '../../features/ConsultationsPage/ConsultationFormPageLayout';
 import PatientsPageLayout from '../../features/PatientsPage/PatientsPageLayout';
 import PatientDetailPageLayout from '../../features/PatientDetailPage/PatientDetailPageLayout';
+import InsurancePageLayout from '../../features/InsurancePage/InsurancePageLayout';
+import CatalogPageLayout from '../../features/CatalogPage/CatalogPageLayout';
 /* ===================================================================== */
 /*🧩 APP LAYOUT - Where the routes for react router live*/
 
@@ -26,6 +28,8 @@ const AppLayout = () => {
                             path="/consultations/:id/edit"
                             element={<ConsultationFormPageLayout />}
                         />
+                        <Route path="/insurance" element={<InsurancePageLayout />} />
+                        <Route path="/catalog" element={<CatalogPageLayout />} />
                     </Route>
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -26,11 +26,11 @@ const DB_RecentConsultations: React.FC<Props> = ({
     return (
         <div
             className={twMerge(
-                'flex h-full min-h-0 flex-col rounded-xl border border-blue-100 bg-white p-5',
+                'flex h-full min-h-0 flex-col rounded-xl border border-blue-100 bg-white p-4',
                 className
             )}
         >
-            <h2 className="mb-2 shrink-0 text-lg font-semibold text-blue-950">
+            <h2 className="mb-2 shrink-0 text-base font-semibold text-blue-950">
                 Recent Consultations
             </h2>
 
@@ -46,7 +46,7 @@ const DB_RecentConsultations: React.FC<Props> = ({
                         <li
                             key={consultation.id}
                             onClick={() => navigate(`/consultations/${consultation.id}/edit`)}
-                            className="flex cursor-pointer items-center justify-between py-3 transition-colors hover:bg-blue-50"
+                            className="flex cursor-pointer items-center justify-between py-2.5 transition-colors hover:bg-blue-50"
                         >
                             <div>
                                 <p className="text-sm font-medium text-slate-900">
