@@ -49,7 +49,7 @@ const LoginPageLayout: React.FC<Props> = ({ className }) => {
     const onSubmit = async (credentials: LoginSchemaType) => {
         try {
             const response = await loginUser(credentials).unwrap();
-
+            console.log('Login response', response);
             if (response.status === 'error') {
                 setErrorMessage(response.message);
                 return;
