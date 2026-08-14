@@ -65,6 +65,8 @@ const LoginPageLayout: React.FC<Props> = ({ className }) => {
         }
     };
 
+    console.log('Vite URL', import.meta.env.VITE_API_URL);
+
     return (
         <div
             className={twMerge(
