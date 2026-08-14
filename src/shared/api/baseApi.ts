@@ -5,7 +5,7 @@ import type { IDBrand } from '../utils/idUtils';
 export const baseApi = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:3000/api',
+        baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api',
         prepareHeaders: (headers) => {
             const token = localStorage.getItem('token');
             if (token) headers.set('authorization', `Bearer ${token}`);
