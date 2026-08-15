@@ -8,6 +8,14 @@ export const formatDate = (iso: string): string =>
 export const isSameDay = (isoA: string, isoB: string): boolean =>
     new Date(isoA).toDateString() === new Date(isoB).toDateString();
 
+// Today's date as "YYYY-MM-DD" in local time, e.g. for defaulting a <input type="date">.
+export const getTodayDateString = (): string => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
+};
+
 // Inclusive range check; an empty from/to bound is treated as unbounded.
 export const isWithinDateRange = (iso: string, from: string, to: string): boolean => {
     const time = new Date(iso).getTime();

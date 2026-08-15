@@ -37,8 +37,11 @@ import {
     useGetConsultationsByPatientIdQuery,
     useUpdateConsultationMutation,
 } from '../../shared/api/endpoints/consultationEndpoint';
-import { calculateAge, formatDate } from '../../shared/utils/dateUtils';
+import { calculateAge, formatDate, getTodayDateString } from '../../shared/utils/dateUtils';
 import { getPatientFullName } from '../../shared/utils/patientUtils';
+import { getApiErrorMessage } from '../../shared/utils/apiUtils';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import type { SerializedError } from '@reduxjs/toolkit';
 import {
     consultationSchema,
     type ConsultationFormValues,
@@ -93,7 +96,12 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
         formState: { errors, isSubmitting },
     } = useForm<ConsultationFormValues, unknown, ConsultationSchemaType>({
         resolver: zodResolver(consultationSchema),
-        defaultValues: { vitals: {}, patientId: initialPatientId, insurance: 'Personal' },
+        defaultValues: {
+            vitals: {},
+            patientId: initialPatientId,
+            insurance: 'Personal',
+            consultationDate: getTodayDateString(),
+        },
         values: consultation
             ? {
                   patientId: consultation.patientId,
@@ -104,7 +112,7 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                   assessment: consultation.assessment,
                   plan: consultation.plan,
                   vitals: {
-                      height: consultation.vitals.height.toString(),
+                      height: consultation.vitals.height?.toString() ?? '',
                       weight: consultation.vitals.weight?.toString() ?? '',
                       temperature: consultation.vitals.temperature?.toString() ?? '',
                   },
@@ -168,11 +176,14 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                 return;
             }
             navigate('/consultations');
-        } catch {
+        } catch (error) {
             setErrorMessage(
-                isEditMode
-                    ? 'Failed to update consultation. Please try again.'
-                    : 'Failed to add consultation. Please try again.'
+                getApiErrorMessage(
+                    error as FetchBaseQueryError | SerializedError,
+                    isEditMode
+                        ? 'Failed to update consultation. Please try again.'
+                        : 'Failed to add consultation. Please try again.'
+                )
             );
         }
     };
@@ -187,8 +198,7 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
 
     const handleSelectMedicine = (medicine: MedicineType) => {
         const currentPlan = getValues('plan').trim();
-        const medicineText = `${medicine.medicine} - ${medicine.description}`;
-        const nextPlan = currentPlan ? `${currentPlan}\n${medicineText}` : medicineText;
+        const nextPlan = currentPlan ? `${currentPlan}\n${medicine.medicine}` : medicine.medicine;
         setValue('plan', nextPlan, { shouldDirty: true, shouldValidate: true });
     };
 
@@ -202,8 +212,13 @@ const ConsultationFormPageLayout: React.FC<Props> = ({ className }) => {
                 return;
             }
             navigate('/consultations');
-        } catch {
-            setDeleteError('Failed to delete consultation. Please try again.');
+        } catch (error) {
+            setDeleteError(
+                getApiErrorMessage(
+                    error as FetchBaseQueryError | SerializedError,
+                    'Failed to delete consultation. Please try again.'
+                )
+            );
         }
     };
 

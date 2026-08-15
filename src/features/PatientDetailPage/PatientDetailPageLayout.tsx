@@ -265,7 +265,11 @@ const PatientDetailPageLayout: React.FC<Props> = ({ className }) => {
                         onClose={() => setIsDeleteDialogOpen(false)}
                         onConfirm={handleDelete}
                         title="Delete Patient"
-                        description={`Are you sure you want to delete ${getPatientFullName(patient)}? This action cannot be undone.`}
+                        description={
+                            consultations.length > 0
+                                ? `Are you sure you want to delete ${getPatientFullName(patient)}? This will also permanently delete their ${consultations.length} consultation ${consultations.length === 1 ? 'record' : 'records'}. This action cannot be undone.`
+                                : `Are you sure you want to delete ${getPatientFullName(patient)}? This action cannot be undone.`
+                        }
                         confirmLabel="Delete"
                         isConfirming={isDeleting}
                     />

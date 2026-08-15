@@ -49,9 +49,11 @@ const ConsultationHistoryList: React.FC<Props> = ({
                         {consultation.plan}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-                            Height {consultation.vitals.height} cm
-                        </span>
+                        {consultation.vitals.height !== undefined && (
+                            <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+                                Height {consultation.vitals.height} cm
+                            </span>
+                        )}
                         {consultation.vitals.temperature !== undefined && (
                             <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
                                 Temp {consultation.vitals.temperature}°C

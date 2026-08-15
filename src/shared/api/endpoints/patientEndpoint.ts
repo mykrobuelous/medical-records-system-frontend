@@ -53,6 +53,7 @@ export const patientApi = baseApi.injectEndpoints({
             invalidatesTags: (_result, _error, id) => [
                 { type: 'Patient', id },
                 { type: 'Patient', id: 'LIST' },
+                { type: 'Consultation', id: 'LIST' },
             ],
         }),
     }),

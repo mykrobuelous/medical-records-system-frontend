@@ -19,7 +19,7 @@ export const consultationSchema = z.object({
     assessment: z.string().min(1, { message: 'Assessment is required' }),
     plan: z.string().min(1, { message: 'Plan is required' }),
     vitals: z.object({
-        height: requiredNumber,
+        height: optionalNumber,
         weight: optionalNumber,
         temperature: optionalNumber,
     }),
